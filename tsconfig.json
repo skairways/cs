@@ -6,11 +6,5 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "outDir": "build",
-    "paths": {
-      "@": ["./src/*"]
-    }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "**/node_modules/*", "src/**/*.test.*"]
 }
