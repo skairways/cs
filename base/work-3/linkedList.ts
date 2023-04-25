@@ -42,6 +42,10 @@ export class LinkedList {
         this.list[this.list.findIndex((el) => el === this.last) - 1];
       this.last.next = this.first;
     }
+    if(this.list.length === 0) {
+      this.first = undefined;
+      this.last = undefined;
+    }
   }
 
   *[Symbol.iterator]() {
