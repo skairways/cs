@@ -11,7 +11,6 @@ export const isValid = (str) => {
           lastSym.charCodeAt(0) === char.charCodeAt(0) - 1 ||
           lastSym.charCodeAt(0) === char.charCodeAt(0) - 2
         ) {
-          isValid = true;
         } else {
           isValid = false;
         }
