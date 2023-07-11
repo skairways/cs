@@ -1,4 +1,6 @@
-const endcodeSchema = [
+type Scheme = [number, string];
+
+const schema: Scheme[] = [
   [3, "number"], // 3 бита число
   [2, "number"], // 2 бита число
   [1, "boolean"], // 1 бит логический
@@ -6,50 +8,125 @@ const endcodeSchema = [
   [16, "ascii"], // 16 бит 2 аски символа
 ];
 
-const encode = (data, schema) => {
-  const bufferSize = schema.reduce((acc, [byte]) => (acc += byte), 0);
-  const buffer = new ArrayBuffer(Math.ceil(bufferSize / 8));
-  const bytes = data.reduce((bytes, el, idx) => {
-    if (schema[idx][1] === "ascii") {
-      el.split("").forEach((char) => {
-        let strInBits = char.charCodeAt(0).toString(2);
-        if (strInBits.length > schema[idx][0] / el.length) {
-          throw new Error("Invalid ascii character: " + char);
-        } else {
-          strInBits = strInBits.padStart(schema[idx][0] / el.length, "0");
-        }
-
-        bytes.push(strInBits);
-      });
-      return bytes;
+const normolizeSchema = (schema: Scheme[]) => {
+  return schema.flatMap(([size, type]) => {
+    if (type === "ascii") {
+      const res = new Array(size / 8).fill([8, { type, partial: true }]);
+      for (let i = 0; i < res.length; i++) {
+        res[i] = [8, { type, partial: i > 0 }];
+      }
+      return res;
     }
-    let bites = Number(el).toString(2);
-    if (bites.length > schema[idx][0]) {
-      bites = bites.slice(-schema[idx][0]);
-    } else {
-      bites = bites.padStart(schema[idx][0], "0");
-    }
-    bytes.push(bites);
-    return bytes;
-  }, []);
 
-  const binaryString = bytes.join("");
-  const view = new DataView(buffer);
-  const binaryArray = new Uint8Array(
-    binaryString.match(/.{1,8}/g).map((byte) => parseInt(byte, 2))
-  );
-  binaryArray.forEach((byte, idx) => {
-    view.setUint8(idx, byte);
+    return [[size, { type, partial: false }]];
   });
-  return buffer;
 };
 
-const encodedData = encode([2, 3, true, false, "ab"], endcodeSchema);
+const getViewMaxSize = (normolizeSchema) => {
+  return Math.max(
+    ...normolizeSchema.map(([size]) => (size <= 8 ? 8 : size <= 16 ? 16 : 32))
+  );
+};
 
-const decodeSchema = [
-  [3, 'number'],  // 3 бита число
-  [2, 'number'],  // 2 бита число
-  [1, 'boolean'], // 1 бит логический
-  [1, 'boolean'], // 1 бит логический
-  [16, 'ascii']   // 16 бит 2 аски символа
-];
+const getOffsets = (normolizeSchema) => {
+  const size = getViewMaxSize(normolizeSchema);
+
+  const offsets = [];
+
+  loop: for (let i = 0, index = 0; i < normolizeSchema.length; index++) {
+    let offset = 0;
+    while (offset + normolizeSchema[i][0] <= size) {
+      const cur = normolizeSchema[i];
+      offsets.push([cur[0], { ...cur[1], offset, index }]);
+
+      offset += cur[0];
+      i++;
+
+      if (i === normolizeSchema.length) {
+        break loop;
+      }
+    }
+  }
+
+  return offsets;
+};
+
+const createMask = (size, offset = 0) => {
+  return ((2 ** 32 - 1) >>> (32 - size)) << offset;
+};
+
+const encode = (data, schema) => {
+  const normolizedSchema = normolizeSchema(schema);
+
+  const size = getViewMaxSize(normolizedSchema);
+
+  const offsets = getOffsets(normolizedSchema);
+
+  const buffer = new globalThis[`Uint${size}Array`](
+    offsets.at(-1)[1].index + 1
+  );
+
+  function* dataIterator() {
+    for (const el of data) {
+      if (typeof el === "string") {
+        yield* el;
+      } else {
+        yield el;
+      }
+    }
+  }
+
+  const iter = dataIterator();
+
+  offsets.forEach(([size, { offset, index, type }]) => {
+    const { value, done } = iter.next();
+
+    if (done) {
+      throw new TypeError("Schema mismatch");
+    }
+
+    const bytes = type === "ascii" ? value.charCodeAt(0) : value;
+
+    buffer[index] |= (bytes & createMask(size)) << offset;
+  });
+
+  return buffer.buffer;
+};
+const decode = (data, schema) => {
+  const normolizedSchema = normolizeSchema(schema);
+
+  const size = getViewMaxSize(normolizedSchema);
+
+  const offsets = getOffsets(normolizedSchema);
+
+  const buffer = new globalThis[`Uint${size}Array`](data);
+
+  const res = [];
+
+  offsets.forEach(([size, { offset, index, type, partial }]) => {
+    const bytes = (buffer[index] & createMask(size, offset)) >> offset;
+
+    switch (type) {
+      case "number":
+        res.push(bytes);
+        break;
+
+      case "boolean":
+        res.push(bytes > 0);
+        break;
+
+      case "ascii":
+        const char = String.fromCharCode(bytes);
+        if (partial) {
+          res[res.length - 1] += char;
+        } else {
+          res.push(char);
+        }
+        break;
+    }
+  });
+
+  return res;
+};
+
+console.log(decode(encode([2, 3, true, false, "ab"], schema), schema));
