@@ -6,8 +6,8 @@ export function random<T>(min: number, max: number): IterableIterator<number> {
 
     next: () => {
       return {
+        value: Math.ceil(Math.random() * (max - min)) + min,
         done: false,
-        value: Math.ceil(Math.random() * max) + min,
       };
     },
   };
