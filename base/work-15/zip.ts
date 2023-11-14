@@ -1,12 +1,31 @@
-export function zip(...args: Iterable<any>[]): Iterable<any>[] {
-  const result = [];
-  let innerIter
-  for (let i = 0; i < args.length; i++) {
-    innerIter = args[i][Symbol.iterator]();
-    
-    result.push(innerIter.next().value);
-    
-  }
-  console.log(result);
-  return [result];
+export function zip(...args: Iterable<any>[]): IterableIterator<any>[] {
+  const iters = args.map((i) => i[Symbol.iterator]());
+
+  return <any>{
+    [Symbol.iterator]() {
+      return this;
+    },
+
+    next() {
+      const res = new Array(args.length);
+
+      for (const [i, iter] of iters.entries()) {
+        const chunk = iter.next();
+
+        if (chunk.done) {
+          return {
+            done: true,
+            value: undefined,
+          };
+        }
+
+        res[i] = chunk.value
+      }
+
+      return {
+        done: false,
+        value: res,
+      };
+    },
+  };
 }

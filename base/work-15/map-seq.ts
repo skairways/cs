@@ -10,7 +10,7 @@ export function mapSeq(
     },
 
     next() {
-      const res = cursor.next();
+      const res = cursor.next(); 
       for (const iterFn of iterFunctions) {
         res.value = iterFn(res.value);
       }

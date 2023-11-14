@@ -6,25 +6,15 @@ export class Range implements IterableIterator<RangeInput> {
   private rangeType: RangeInput;
   private cursor: number;
   private limit: number;
-  private increment: number = 1;
-  private direction: boolean;
+  private reversed: boolean;
 
   constructor(start: RangeInput, finish: RangeInput) {
-    if (typeof start === "string" && typeof finish === "string") {
-      this.start = start.charCodeAt(0);
-      this.finish = finish.charCodeAt(0);
-      this.rangeType = "string";
-    }
-
-    if (typeof start === "number" && typeof finish === "number") {
-      this.start = start;
-      this.finish = finish;
-      this.rangeType = "number";
-    }
+    this.start = this.getNumber(start);
+    this.finish = this.getNumber(finish);
 
     this.cursor = this.start;
     this.limit = this.finish;
-    this.direction = this.start < this.finish ? true : false;
+    this.reversed = this.start < this.finish ? true : false;
   }
 
   [Symbol.iterator]() {
@@ -34,25 +24,39 @@ export class Range implements IterableIterator<RangeInput> {
   next() {
     const response = {
       done: this.findDir(this.cursor, this.limit),
-      value:
-        this.rangeType === "string"
-          ? String.fromCharCode(this.cursor)
-          : this.cursor,
+      value: this.getT(this.reversed ? this.cursor++ : this.cursor--),
     };
-    this.cursor += this.increment;
-    return response;
-  }
 
-  findDir(start, finish) {
-    return this.direction ? start > finish : start < finish;
+    return response;
   }
 
   reverse() {
     this.cursor = this.finish;
     this.limit = this.start;
-    this.increment = -1;
-    this.direction = !this.direction;
+    this.reversed = !this.reversed;
 
     return this;
+  }
+
+  protected getNumber(value: RangeInput): number {
+    if (typeof value === "string") {
+      this.rangeType = "string";
+      return value.charCodeAt(0) ?? NaN;
+    }
+
+    this.rangeType = "number";
+    return value;
+  }
+
+  protected getT(value: number) {
+    if (this.rangeType === "string") {
+      return String.fromCharCode(value);
+    }
+
+    return value;
+  }
+
+  protected findDir(start, finish) {
+    return this.reversed ? start > finish : start < finish;
   }
 }
