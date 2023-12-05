@@ -3,8 +3,8 @@ import { Parser } from "./types";
 export function seq(
   ...parsers: Parser<string, string>[]
 ): Parser<string, string> {
-  return function* (source, prev) {
-    let iter = source;
+  return function* <Parser>(source, prev) {
+    let iter = source[Symbol.iterator]();
 
     let value = [];
     for (const parser of parsers) {

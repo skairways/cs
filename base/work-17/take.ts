@@ -1,8 +1,8 @@
 import { Parser } from "./types";
 
 export function take(rule, opts: any = {}): Parser<string, string> {
-  return function* (source) {
-    let iterSource = source;
+  return function*  <Parser>(source) {
+    let iterSource = source[Symbol.iterator]();
     const { min = 1, max = Infinity } = opts;
     let value = "";
 

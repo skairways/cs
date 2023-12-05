@@ -1,5 +1,6 @@
 // Необходимо написать парсерный генератор tag
 
+import { or } from "./or";
 import { seq } from "./seq";
 import { tag } from "./tag";
 import { take } from "./take";
@@ -27,13 +28,21 @@ import { take } from "./take";
 
 // Функция принимает множество парсеров и возвращает новый, который последовательно считывает символы походящие под заданные парсеры.
 
-const fnExpr = seq(
-  tag("function "),
+// const fnExpr = seq(
+//   tag("function "),
 
-  take(/[a-z_$]/i, { max: 1 }),
-  take(/\w/, { min: 0 }),
+//   take(/[a-z_$]/i, { max: 1 }),
+//   take(/\w/, { min: 0 }),
 
-  tag("()")
-)("function boo() {}");
+//   tag("()")
+// )("function boo() {}");
 
-console.log(fnExpr.next()); // {done: true, value: {type: 'SEQ', value: 'function foo()'}}
+// console.log(fnExpr.next()); // {done: true, value: {type: 'SEQ', value: 'function foo()'}}
+
+//Необходимо написать парсерный комбинатор or
+
+//Функция принимает множество парсеров и возвращает новый, который пытается применить первые иетратор, а если это невозможно, то пробует второй и т.д.
+
+const boolExpr = or(tag("true"), tag("false"))("false");
+
+console.log(boolExpr.next()); // {done: true, value: {type: 'TAG', value: 'false'}}
