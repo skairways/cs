@@ -16,7 +16,7 @@ export function seq(
 
     const token = {
       type: "SEQ",
-      value: value.reduce((sum, { value }) => (sum += value), ""),
+      value,
     };
 
     return [token, iter];

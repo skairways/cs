@@ -1,15 +1,19 @@
 import { Parser } from "./types";
 
 export function take(rule, opts: any = {}): Parser<string, string> {
-  return function* (source, prev) {
-
+  return function* (source) {
+    let iterSource = source;
     const { min = 1, max = Infinity } = opts;
     let value = "";
 
+    let buffer = [];
+
     if (rule instanceof RegExp) {
-      for (const iter of source) {
+      for (const iter of iterSource) {
         if (rule.test(iter)) {
           value += iter;
+        } else {
+          buffer.push(iter);
         }
         if (value.length >= max) {
           break;
@@ -22,6 +26,6 @@ export function take(rule, opts: any = {}): Parser<string, string> {
       value,
     };
 
-    return [token, source];
+    return [token, buffer.length ? buffer : iterSource];
   };
 }
