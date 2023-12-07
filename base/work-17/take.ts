@@ -1,7 +1,7 @@
 import { Parser } from "./types";
 
 export function take(rule, opts: any = {}): Parser<string, string> {
-  return function*  <Parser>(source) {
+  return function* <Parser>(source) {
     let iterSource = source[Symbol.iterator]();
     const { min = 1, max = Infinity } = opts;
     let value = "";
@@ -14,6 +14,7 @@ export function take(rule, opts: any = {}): Parser<string, string> {
           value += iter;
         } else {
           buffer.push(iter);
+          break;
         }
         if (value.length >= max) {
           break;
@@ -26,6 +27,6 @@ export function take(rule, opts: any = {}): Parser<string, string> {
       value,
     };
 
-    return [token, buffer.length ? buffer : iterSource];
+    return [token, buffer.length ? [...buffer, ...iterSource].join('') : iterSource];
   };
 }

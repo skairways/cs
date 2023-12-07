@@ -79,7 +79,7 @@ const boolExpr = or(
 
 console.log(fnExpr.next()); // {done: true, value: {type: 'TAG', value: 'false'}}
 ```
-
+<!-- TODO -->
 ## Необходимо написать парсерный комбинатор repeat
 
 Функция принимает парсер и параметры min/max и возвращает новый, который применяет заданный итератор указанное количество раз.
@@ -94,7 +94,7 @@ console.log(fnExpr.next()); // {done: false, value: {type: 'SEQ', value: '100,'}
 console.log(fnExpr.next()); // {done: false, value: {type: 'SEQ', value: '200,'}}
 console.log(fnExpr.next()); // {done: false, value: {type: 'SEQ', value: '300,'}}
 ```
-
+<!-- TODO -->
 ## Необходимо написать парсерный комбинатор opt
 
 Функция принимает парсер и возвращает новый, который применяет заданный итератор один раз или ноль (если применить парсер невозможно).
