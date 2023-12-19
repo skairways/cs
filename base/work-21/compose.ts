@@ -1,7 +1,7 @@
-export function compose(...args) {
-  function composed(input) {
-    return args.reverse().reduce((res, func) => func(res ?? input), undefined);
-  }
-
-  return composed;
+export function compose(...fns) {
+  return fns.reduceRight((acc, fn) => {
+    return function (value) {
+      return fn.call(this, acc.call(this, value))
+    };
+  });
 }
