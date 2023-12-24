@@ -2,11 +2,9 @@
 
 import { compose } from "./compose";
 
-// import { curry } from "./curry";
+import { curry } from "./curry";
 
-// const diff = curry((a, b) => a - b);
-
-// console.log(diff(curry._, 10)(15)); // 5
+// const diff = curry((a, b, c) => a - b + c);
 
 // Необходимо реализовать функцию compose для композиции функций
 
