@@ -14,9 +14,77 @@ export class SyncPromise {
     return new SyncPromise((_, reject) => reject(value));
   }
 
+  static all(iterable: any[]) {
+    return new SyncPromise((resolve, reject) => {
+      const promises = [...iterable].map(SyncPromise.resolve);
+      const results = new Array(promises.length);
+      let fulfilledCount = 0;
+
+      promises.forEach((promise, index) => {
+        promise.then(
+          (value) => (results[index] = value),
+          (err) => reject(err)
+        );
+        fulfilledCount++;
+
+        if (fulfilledCount === promises.length) {
+          resolve(results);
+        }
+      });
+    });
+  }
+
+  static allSettled(iterable) {
+    return new SyncPromise((resolve) => {
+      const promises = [...iterable].map(SyncPromise.resolve);
+      const results = new Array(promises.length);
+
+      promises.forEach((promise, index) => {
+        promise.then(
+          (value) => {
+            return (results[index] = { status: "fulfilled", value });
+          },
+          (reason) => {
+            return (results[index] = { status: "rejected", reason });
+          }
+        );
+      });
+
+      resolve(results);
+    });
+  }
+
+  static race(iterable) {
+    return new SyncPromise((resolve, reject) => {
+      for (const value of iterable) {
+        SyncPromise.resolve(value).then(resolve, reject);
+      }
+    });
+  }
+
+  static any(iterable) {
+    return new SyncPromise((resolve, reject) => {
+      const promises = [...iterable].map(SyncPromise.resolve);
+      const errors = new Array(promises.length);
+
+      let pending = promises.length;
+
+      promises.forEach((promise, index) => {
+        promise.then(resolve, (err) => {
+          errors[index] = err;
+          pending--;
+
+          if (pending === 0) {
+            reject(new AggregateError(errors));
+          }
+        });
+      });
+    });
+  }
+
   constructor(initializer) {
     const reject = (err) => {
-      if (this.value !== null || this.state !== "pending") return;
+      if (this.value === null || this.state !== "pending") return;
 
       this.value = err;
       this.state = "rejected";
@@ -40,7 +108,6 @@ export class SyncPromise {
       const fulfill = (value) => {
         this.state = "fulfilled";
         this.value = value;
-
         this.onFulfilled.forEach((handler) => handler(this.value));
       };
 
@@ -54,7 +121,6 @@ export class SyncPromise {
 
     try {
       const res = initializer(resolve, reject);
-
       if (typeof res?.catch === "function") res.catch(reject);
     } catch (err) {
       reject(err);
@@ -149,9 +215,8 @@ export class SyncPromise {
   }
 
   protected call(fn, args, onRejected, onResolved) {
-    const reject = onRejected ?? loopback,
-      resolve = onResolved ?? loopback;
-
+    const reject = onRejected ?? loopback;
+    const resolve = onResolved ?? loopback;
     try {
       const res = fn?.(...args);
 
