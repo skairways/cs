@@ -6,9 +6,9 @@ setTimeout(() => {
   console.log(3);
 }, 0);
 
-// setImmediate(() => {
-//   console.log(1);
-// });
+setImmediate(() => {
+  console.log(1);
+});
 
 const timer = setImmediate(() => {
   console.log(2);
@@ -16,15 +16,17 @@ const timer = setImmediate(() => {
 
 clearImmediate(timer);
 
-
 function setImmediate(cb: () => void) {
-  return new Promise((resolve, reject) => {
-    resolve(cb);
-  }).then().finally(() => {
-    console.log("finally");
+  let abort = false;
+  Promise.resolve().then(() => {
+    if (!abort) cb();
   });
+  // самому смешно смотреть на этот костыль, но вроде креативненько
+  return () => {
+    abort = true;
+  };
 }
 
-function clearImmediate(timer: Promise<any>) {
-  timer.then((v: any) => console.log(v));
+function clearImmediate(timer) {
+  timer();
 }
