@@ -1,18 +1,21 @@
-// Реализация функции promisify
+// Что и в каком порядке выведется в консоль? И почему?
 
-// Необходимо написать функцию, которая бы создавал функции с Promise API на основе функций с callback API.
-// Формат callback функции ожидается в стиле Node.js, где первый аргумент - это объект ошибки.
+console.log('foo'); // sync
 
-function cbDiv(a, b, cb) {
-  if (b === 0) {
-    cb(new TypeError('Нельзя делить на 0'));
-  
-  } else {
-    cb(null, a / b);
-  }
-}
+setTimeout(() => {
+  console.log('bar'); // macro
+}, 0);
 
-const promiseDiv = promisify(cbDiv);
+queueMicrotask(() => {
+  console.log('baz');  // micro
+  Promise.resolve().then().then(() => console.log('ban')); // micro for next cb
+});
 
-promiseDiv(1, 2).then(console.log);  // 0.5
-promiseDiv(1, 0).catch(console.log); // TypeError('Нельзя делить на 0')
+new Promise((resolve) => {
+  console.log('bla');  // sync on cb
+  resolve('baf'); // micro for next cb
+}).then(console.log); // micro
+
+console.log('bak'); // sync
+
+// foo bla bak baz baf ban bar

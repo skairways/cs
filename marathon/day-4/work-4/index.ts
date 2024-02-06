@@ -1,11 +1,35 @@
-// Поиск в массиве строк по заданной подстроке с пропуском символов
+// Реализовать zip для синхронных Iterable объектов
 
-// Необходимо написать функцию, которая бы принимала массив строк и строку и возвращала бы новый массив, 
-// состоящий только из элементов с содержанием заданной подстроки. Алгоритм должен учитывать, что подстрока может быть найдена в строке при помощи пропуска части символов в строке (нечеткий поиск).
+// Общее количество кортежей берется по минимальному значению. Функция должна возвращать IterableIterator.
 
-console.log(find('kbza', [
-  'kobezzza',
-  'bob',
-  'kibiza',
-  'kobea'
-])); // ['kobezzza', 'kibiza']
+console.log(...zip(new Set([1, 2]), ["a", "b", "z"], "...")); // [1, 'a', '.'] [2, 'b', '.']
+
+function zip(...arr: Iterable<any>[]): IterableIterator<unknown> {
+  const iters = arr.map((item) => item[Symbol.iterator]());
+
+  return {
+    [Symbol.iterator]() {
+      return this;
+    },
+
+    next() {
+      const item = [];
+      for (const iter of iters) {
+        const chunk = iter.next();
+        if (chunk.done) {
+          return {
+            done: true,
+            value: undefined,
+          };
+        }
+        item.push(chunk.value);
+      }
+
+      return {
+        done: false,
+        value: item,
+      };
+    },
+  };
+}
+

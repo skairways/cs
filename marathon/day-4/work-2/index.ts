@@ -1,31 +1,32 @@
-// Написать класс числа с рекурсивным API для арифметических операций
+// Реализовать функцию setImmediate
 
-// Необходимо проанализировать пример ниже и реализовать нужный API, где
+// Необходимо функцию, которая бы предоставляла API схожее с setTimeout, но создавала бы микротаску.
 
-// 1. add - сложение
-// 2. sub - вычитание
-// 3. mult - умножение
-// 4. div - деление
+setTimeout(() => {
+  console.log(3);
+}, 0);
 
-class MyNumber {
-  private myNum: number
-  constructor(protected num: number) {
-    this.myNum = num
-  }
+setImmediate(() => {
+  console.log(1);
+});
 
-  add(num: number) {
-    return new MyNumber(this.myNum)
-  }
-  mult(num: number) {
-    
-  }
-  sub(num: number) {
-    return new MyNumber(this.myNum)
-  }
-  div(num: number) {}
-  
+const timer = setImmediate(() => {
+  console.log(2);
+});
+
+clearImmediate(timer);
+
+function setImmediate(cb: () => void) {
+  let abort = false;
+  Promise.resolve().then(() => {
+    if (!abort) cb();
+  });
+  // самому смешно смотреть на этот костыль, но вроде креативненько
+  return () => {
+    abort = true;
+  };
 }
 
-const num = new MyNumber(10);
-
-console.log(num.add(2).mult(2)/* .sub(1) - 5 */); // 18
+function clearImmediate(timer) {
+  timer();
+}
