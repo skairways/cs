@@ -8,24 +8,32 @@
 // 4. div - деление
 
 class MyNumber {
-  private myNum: number
+  protected myNumber: number;
   constructor(protected num: number) {
-    this.myNum = num
+    this.myNumber = num;
   }
 
-  add(num: number) {
-    return new MyNumber(this.myNum)
+  add(input: number): any {
+    return new MyNumber(this.myNumber + input);
   }
-  mult(num: number) {
-    
+
+  sub(input: number): any {
+    return new MyNumber(this.myNumber - input);
   }
-  sub(num: number) {
-    return new MyNumber(this.myNum)
+
+  mult(input: number): any {
+    return new MyNumber(this.myNumber * input);
   }
-  div(num: number) {}
-  
+
+  div(input: number): any {
+    return new MyNumber(this.myNumber / input);
+  }
+
+  [Symbol.toPrimitive]() {
+    return this.myNumber;
+  }
 }
 
 const num = new MyNumber(10);
 
-console.log(num.add(2).mult(2)/* .sub(1) - 5 */); // 18
+console.log(num.add(2).mult(2).sub(1) - 5); // 18
