@@ -10,7 +10,7 @@ function find(searchedStr: string, strArr: string[]): string[] {
       if (sym === stack[0]) {
         stack.shift();
       }
-      if (stack.length === 0) {
+      if (stack.length === 0) { 
         return str;
       }
     }
