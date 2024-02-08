@@ -15,17 +15,15 @@ const tree = {
   ],
 };
 
-function log(tree) {
-  if (typeof tree === "object") {
-    const stack = [];
-    console.log(tree.value);
-    if (tree.children) {
-      tree.children.forEach((child) => {
-        console.log(child.value);
-        if (child.children) stack.push(...child.children);
-      });
-      stack.forEach((child) => log(child));
-    }
+function log(node) {
+  const queue = [node]
+
+  while(queue.length > 0) {
+    const head = queue.shift()
+    console.log(head.value)
+    head.children?.forEach(child => {
+      queue.push(child)
+    });
   }
 }
 
