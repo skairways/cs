@@ -10,10 +10,10 @@ const debouncedLaugh = debounce(laugh, 300);
 
 function debounce(fn, delay) {
   let timerId;
-  return function () {
+  return function (...args) {
     clearTimeout(timerId);
     timerId = setTimeout(() => {
-      fn();
+      fn.apply(this, args);
     }, delay);
   };
 }

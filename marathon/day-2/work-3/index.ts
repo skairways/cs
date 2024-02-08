@@ -2,7 +2,7 @@
 
 // Необходимо написать функцию, которая бы возвращала максимальную глубину заданного дерева.
 
-const tree = {
+const vTree = {
   value: "foo",
   children: [
     {
@@ -19,4 +19,4 @@ function maxDepth(absTree, length = 0) {
   
 }
 
-console.log(maxDepth(tree)); // 2
+console.log(maxDepth(vTree)); // 2
