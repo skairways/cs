@@ -5,7 +5,9 @@
 console.log(zipStr("abbaabbafffbezza")); // abafbeza
 
 function zipStr(str: string) {
-  return str.replaceAll(/\w/g, (value, key) => {
-    return str[key + 1] === value ? "" : value;
-  });
+  while (true) {
+    const zip = str.replaceAll(/(.+)\1+/g, "$1")
+    if(zip === str) return zip
+    str = zip
+  }
 }

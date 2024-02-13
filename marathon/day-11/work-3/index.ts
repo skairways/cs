@@ -25,16 +25,14 @@ class LRUCache {
   }
 
   set(k, v) {
-    if (this.cache.size >= 3) {
+    if (this.cache.size >= this.size) {
       this.cache.delete(this.cache.keys().next().value);
     }
     return this.cache.set(k, v);
   }
 
   delete(k) {
-    if (this.cache.has(k)) {
-      this.cache.delete(k);
-    }
+    this.cache.delete(k);
   }
 }
 

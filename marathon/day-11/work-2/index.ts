@@ -8,12 +8,25 @@ retry(() => fetch("//random"), { retry: 3, delay: (n) => n * 1000 }).then(
   console.error
 );
 
-function retry(fetcher: () => Promise<unknown>, opts): Promise<unknown> {
-  let { retry: retryNum, delay, counter = 0 } = opts;
-  return fetcher().catch((err) => {
-    if (retryNum === counter) Promise.reject(err);
-    setTimeout(() => {
-      retry(fetcher, { ...opts, counter: ++counter });
-    }, delay(counter));
-  });
+function retry(
+  fn: () => Promise<unknown>,
+  { retry, delay, i = 0 }
+): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    execute()
+    function doRetry(err) {
+      if(retry-- <= 0) {
+        reject(err)
+        return
+      }
+      setTimeout(execute, delay(++i));
+    }
+    function execute() {
+      try {
+        Promise.resolve(fn()).then(resolve).catch(doRetry)
+      } catch (err) {
+        doRetry(err)
+      }
+    }
+  })
 }
