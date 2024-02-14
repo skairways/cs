@@ -32,4 +32,8 @@ export class LRUCache {
       this.store.delete(key);
     }
   }
+
+  clear() {
+    this.store.clear();
+  }
 }
